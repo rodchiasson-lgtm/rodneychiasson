@@ -1,0 +1,5 @@
+anthropic
+python-dotenv
+duckduckgo-search
+requests
+flask
