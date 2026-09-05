@@ -41,26 +41,32 @@ tools = [
 
 
 def get_weather(city: str) -> str:
-    """Look up current weather via wttr.in (no API key required)."""
+    """Look up current weather via Open-Meteo (no API key required)."""
     try:
-        response = requests.get(
-            f"https://wttr.in/{city}",
-            params={"format": "j1"},
+        geo = requests.get(
+            "https://geocoding-api.open-meteo.com/v1/search",
+            params={"name": city, "count": 1},
             timeout=10,
         )
-        response.raise_for_status()
-    except requests.exceptions.RequestException as e:
-        return f"Error: {e}"
+        geo.raise_for_status()
+        results = geo.json().get("results")
+        if not results:
+            return f"City {city} not found"
+        lat, lon = results[0]["latitude"], results[0]["longitude"]
 
-    try:
-        current = response.json()["current_condition"][0]
+        weather = requests.get(
+            "https://api.open-meteo.com/v1/forecast",
+            params={"latitude": lat, "longitude": lon, "current": "temperature_2m"},
+            timeout=10,
+        )
+        weather.raise_for_status()
+        temp = weather.json()["current"]["temperature_2m"]
+    except requests.exceptions.RequestException as e:
+        return f"Error fetching weather: {e}"
     except (KeyError, IndexError, ValueError):
         return f"Weather data not available for {city}"
 
-    return (
-        f"{current['temp_F']}°F, "
-        f"{current['weatherDesc'][0]['value']}"
-    )
+    return f"{city}: {temp}°C"
 
 
 tool_functions = {
