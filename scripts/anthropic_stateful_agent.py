@@ -102,5 +102,12 @@ class Agent:
 
 if __name__ == "__main__":
     agent = Agent()
-    print(agent.chat("What's 2+2?"))
-    print(agent.chat("And what's that times 5?"))  # Agent remembers context
+    while True:
+        try:
+            user_input = input("\nYou: ")
+        except (EOFError, KeyboardInterrupt):
+            break
+        if user_input.lower() == "exit":
+            break
+        response = agent.chat(user_input)
+        print(f"Agent: {response}")
