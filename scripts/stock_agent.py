@@ -123,4 +123,7 @@ if __name__ == "__main__":
             break
         if not query.strip():
             continue
-        print(f"\n{run_agent(query)}\n")
+        try:
+            print(f"\n{run_agent(query)}\n")
+        except anthropic.APIError as e:
+            print(f"\nError calling the API: {e}\n")
