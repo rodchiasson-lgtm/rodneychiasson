@@ -1,0 +1,40 @@
+{
+  "mcpServers": {
+    "workday-hcm": {
+      "command": "python",
+      "args": ["-m", "mcp_servers.workday_hcm"],
+      "env": {
+        "WORKDAY_BACKEND": "mock",
+        "WORKDAY_TENANT": "acme_corp",
+        "WORKDAY_BASE_URL": "http://127.0.0.1:8765",
+        "WORKDAY_REST_TOKEN": "mock-token"
+      }
+    },
+    "workday-soap": {
+      "command": "python",
+      "args": ["-m", "mcp_servers.workday_soap"],
+      "env": {
+        "WORKDAY_BACKEND": "mock",
+        "WORKDAY_TENANT": "acme_corp",
+        "WORKDAY_BASE_URL": "http://127.0.0.1:8765",
+        "WORKDAY_ISU_USER": "ISU_DayOne@acme_corp",
+        "WORKDAY_ISU_PASSWORD": "mock-password",
+        "WORKDAY_SOAP_VERSION": "v43.0"
+      }
+    },
+    "workday-data": {
+      "command": "python",
+      "args": ["-m", "mcp_servers.workday_data"],
+      "env": {
+        "WORKDAY_BACKEND": "mock",
+        "WORKDAY_TENANT": "acme_corp",
+        "WORKDAY_BASE_URL": "http://127.0.0.1:8765",
+        "WORKDAY_REST_TOKEN": "mock-token"
+      }
+    },
+    "policy-docs": {
+      "command": "python",
+      "args": ["-m", "mcp_servers.policy_docs"]
+    }
+  }
+}

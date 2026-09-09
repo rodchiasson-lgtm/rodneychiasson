@@ -1,0 +1,40 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "dayone-agent"
+version = "0.1.0"
+description = "Workday HR/Finance operations agent for Forward Deployment Engineer interview demo"
+authors = [{name = "Claude", email = "noreply@anthropic.com"}]
+requires-python = ">=3.11"
+
+dependencies = [
+    "fastapi>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
+    "httpx>=0.25.0",
+    "pyyaml>=6.0",
+    "duckdb>=0.9.0",
+    "mcp>=0.6.0,<2.0.0",
+]
+
+[project.scripts]
+# Mock Workday tenant (FastAPI service)
+dayone-mock-tenant = "mock_tenant.app:app"
+
+# MCP servers
+dayone-workday-hcm = "mcp_servers.workday_hcm:mcp"
+dayone-workday-soap = "mcp_servers.workday_soap:mcp"
+dayone-workday-data = "mcp_servers.workday_data:mcp"
+dayone-policy-docs = "mcp_servers.policy_docs:mcp"
+
+[tool.hatch.build.targets.wheel]
+packages = ["mock_tenant", "mcp_servers", "policy"]
+
+[tool.black]
+line-length = 120
+target-version = ["py311"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"

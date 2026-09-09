@@ -1,0 +1,116 @@
+# Seed data for the mock Workday tenant "acme_corp".
+# Five pre-hires starting inside the next 14 days. Each carries at most one
+# deliberate fault so the demo walks one clean record and four distinct blockers.
+#
+# faults:
+#   stale_costing          costing allocation points at a closed cost center
+#   frozen_position        position is under hiring freeze
+#   missing_laptop_ticket  no ITSM provisioning ticket exists
+#   bp_awaiting_approval   Hire business process parked at a manager approval step
+#   soap_timeout           first SOAP write for this pre-hire times out (tests retry + idempotency)
+
+tenant: acme_corp
+today_offset_days: 0   # readiness window is computed relative to "today" at seed time
+
+cost_centers:
+  - {id: CC-4410, name: "Platform Engineering (legacy)", status: Closed, closed_on: "2026-07-31", successor: CC-4470}
+  - {id: CC-4470, name: "Platform Engineering", status: Active}
+  - {id: CC-5120, name: "Data Science", status: Active}
+  - {id: CC-6200, name: "Finance Systems", status: Active}
+  - {id: CC-7010, name: "Field Operations EMEA", status: Active}
+
+supervisory_orgs:
+  - {id: SO-100, name: "Platform Engineering", manager: W-1007, default_cost_center: CC-4470}
+  - {id: SO-200, name: "Data Science", manager: W-1012, default_cost_center: CC-5120}
+  - {id: SO-300, name: "Finance Systems", manager: W-1019, default_cost_center: CC-6200}
+  - {id: SO-400, name: "Field Operations EMEA", manager: W-1023, default_cost_center: CC-7010}
+
+workers:
+  - {id: W-1007, name: "Marcus Bell", title: "Director, Platform Engineering", org: SO-100}
+  - {id: W-1012, name: "Elena Sorokina", title: "Head of Data Science", org: SO-200}
+  - {id: W-1019, name: "Tom Achebe", title: "Finance Systems Lead", org: SO-300}
+  - {id: W-1023, name: "Ingrid Halvorsen", title: "VP Field Operations EMEA", org: SO-400}
+  - {id: W-1031, name: "Dana Whitfield", title: "HR Business Partner", org: SO-100, role: hr_partner}
+  - {id: W-1032, name: "Samir Qureshi", title: "Finance Partner", org: SO-300, role: finance_partner}
+
+positions:
+  - {id: P-2201, org: SO-100, job_profile: "Senior Software Engineer", status: Open, available_from: "+3d", hiring_freeze: false}
+  - {id: P-2202, org: SO-200, job_profile: "Machine Learning Engineer", status: Open, available_from: "+5d", hiring_freeze: false}
+  - {id: P-2203, org: SO-300, job_profile: "Financial Systems Analyst", status: Open, available_from: "+7d", hiring_freeze: false}
+  - {id: P-2204, org: SO-400, job_profile: "Regional Operations Manager", status: Frozen, available_from: "+9d", hiring_freeze: true, freeze_reason: "EMEA headcount review until 30 Sep"}
+  - {id: P-2205, org: SO-100, job_profile: "Site Reliability Engineer", status: Open, available_from: "+11d", hiring_freeze: false}
+
+requisitions:
+  - {id: R-3301, position: P-2201, status: Filled, target_hire_date: "+3d", candidate: C-9001}
+  - {id: R-3302, position: P-2202, status: Filled, target_hire_date: "+12d", candidate: C-9002}   # target date drifted from confirmed start
+  - {id: R-3303, position: P-2203, status: Filled, target_hire_date: "+7d", candidate: C-9003}
+  - {id: R-3304, position: P-2204, status: Open,   target_hire_date: "+9d", candidate: C-9004}
+  - {id: R-3305, position: P-2205, status: Filled, target_hire_date: "+11d", candidate: C-9005}
+
+pre_hires:
+  - id: PH-9001
+    candidate: C-9001
+    name: "Priya Nair"
+    position: P-2201
+    requisition: R-3301
+    start_date: "+3d"
+    hire_event: {status: Successfully Completed, awaiting_step: null}
+    costing: {cost_center: CC-4410, split: [{cost_center: CC-4410, pct: 100}], effective: "+3d"}
+    fault: stale_costing
+  - id: PH-9002
+    candidate: C-9002
+    name: "Jonas Weber"
+    position: P-2202
+    requisition: R-3302
+    start_date: "+5d"
+    hire_event: {status: Successfully Completed, awaiting_step: null}
+    costing: {cost_center: CC-5120, split: [{cost_center: CC-5120, pct: 100}], effective: "+5d"}
+    fault: missing_laptop_ticket
+  - id: PH-9003
+    candidate: C-9003
+    name: "Amara Okafor"
+    position: P-2203
+    requisition: R-3303
+    start_date: "+7d"
+    hire_event: {status: In Progress, awaiting_step: "Approval by Manager (Tom Achebe)"}
+    costing: {cost_center: CC-6200, split: [{cost_center: CC-6200, pct: 100}], effective: "+7d"}
+    fault: bp_awaiting_approval
+  - id: PH-9004
+    candidate: C-9004
+    name: "Luca Moretti"
+    position: P-2204
+    requisition: R-3304
+    start_date: "+9d"
+    hire_event: {status: Not Started, awaiting_step: null}
+    costing: null
+    fault: frozen_position
+  - id: PH-9005
+    candidate: C-9005
+    name: "Hannah Lindqvist"
+    position: P-2205
+    requisition: R-3305
+    start_date: "+11d"
+    hire_event: {status: Successfully Completed, awaiting_step: null}
+    costing: {cost_center: CC-4470, split: [{cost_center: CC-4470, pct: 100}], effective: "+11d"}
+    fault: null
+
+# ITSM tickets (external provisioning system). PH-9002 deliberately has none.
+itsm_tickets:
+  - {id: IT-501, pre_hire: PH-9001, type: laptop,   status: Fulfilled}
+  - {id: IT-502, pre_hire: PH-9001, type: identity, status: Fulfilled}
+  - {id: IT-503, pre_hire: PH-9001, type: badge,    status: Fulfilled}
+  - {id: IT-504, pre_hire: PH-9003, type: laptop,   status: In Progress}
+  - {id: IT-505, pre_hire: PH-9003, type: identity, status: Fulfilled}
+  - {id: IT-506, pre_hire: PH-9005, type: laptop,   status: Fulfilled}
+  - {id: IT-507, pre_hire: PH-9005, type: identity, status: Fulfilled}
+  - {id: IT-508, pre_hire: PH-9005, type: badge,    status: Fulfilled}
+
+# Onboarding checklist tasks inside Workday
+onboarding_tasks:
+  - {pre_hire: PH-9001, task: "Manager welcome note", status: Complete}
+  - {pre_hire: PH-9001, task: "Buddy assigned", status: Complete}
+  - {pre_hire: PH-9002, task: "Manager welcome note", status: Complete}
+  - {pre_hire: PH-9002, task: "Buddy assigned", status: Not Started}
+  - {pre_hire: PH-9003, task: "Manager welcome note", status: Not Started}
+  - {pre_hire: PH-9005, task: "Manager welcome note", status: Complete}
+  - {pre_hire: PH-9005, task: "Buddy assigned", status: Complete}

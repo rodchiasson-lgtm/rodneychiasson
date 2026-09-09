@@ -1,0 +1,46 @@
+# Risk tiers for every MCP tool the DayOne agent can call.
+# Read by the MCP servers (to advertise the tier in each tool description)
+# and by .claude/hooks/gate.py (to enforce it before Claude Code dispatches the call).
+#
+#   read  – no side effects; executes freely
+#   T1    – reversible, low-consequence write; executes and is logged
+#   T2    – creates work for someone else; Claude Code asks the operator to confirm
+#   T3    – touches the org chart or the ledger; requires a recorded approval
+#           (named approver + reason) bound to the exact idempotency key
+
+tools:
+  workday-data:
+    list_pending_hires: read
+    get_readiness_row: read
+  workday-hcm:
+    get_position: read
+    get_requisition: read
+    get_pre_hire: read
+    list_onboarding_tasks: read
+    get_cost_center: read
+    list_provisioning_tickets: read
+    update_requisition_target_date: T1
+    create_provisioning_request: T2
+  workday-soap:
+    preview_hire_employee: read
+    hire_employee: T3
+    preview_costing_allocation: read
+    assign_costing_allocation: T3
+  policy-docs:
+    lookup_policy: read
+    list_policies: read
+
+# Who may approve T3 writes, by stage. Approver must appear here by name.
+approval_matrix:
+  hire:
+    - Dana Whitfield        # HR Business Partner
+    - Marcus Bell           # Director, Platform Engineering
+    - Elena Sorokina        # Head of Data Science
+    - Tom Achebe            # Finance Systems Lead
+    - Ingrid Halvorsen      # VP Field Operations EMEA
+  costing:
+    - Samir Qureshi         # Finance Partner
+    - Tom Achebe            # Finance Systems Lead
+
+# Flip to true to drop every tier to read-only without touching code.
+kill_switch: false
