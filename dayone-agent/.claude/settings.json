@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "mcp__workday-hcm__.*|mcp__workday-soap__.*|mcp__workday-data__.*|mcp__policy-docs__.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/gate.py\""
+          }
+        ]
+      }
+    ]
+  }
+}

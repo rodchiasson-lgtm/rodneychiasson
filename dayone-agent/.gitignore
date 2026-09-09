@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.venv/
+
+# Append-only runtime audit trail written by .claude/hooks/gate.py - not source.
+.claude/audit.log
